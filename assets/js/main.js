@@ -45,7 +45,7 @@
     entries.forEach(e => {
       if (!e.isIntersecting) return;
       const siblings = $$(':scope > .reveal', e.target.parentElement);
-      e.target.style.transitionDelay = `${Math.min(siblings.indexOf(e.target), 6) * 80}ms`;
+      e.target.style.transitionDelay = `${Math.min(siblings.indexOf(e.target), 6) * 50}ms`;
       e.target.classList.add('is-in');
       io.unobserve(e.target);
     });
@@ -172,30 +172,6 @@
     chip.hidden = false;
   }
 
-  // file .ics per "aggiungi al calendario"
-  const pad = n => String(n).padStart(2, '0');
-  const icsDate = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
-  const downloadIcs = (e) => {
-    const endExcl = new Date(e.end); endExcl.setDate(endExcl.getDate() + 1);
-    const p = $('p', e.el);
-    const desc = p ? p.textContent.trim() : 'Legione Zero – Programmazione 2027';
-    const ics = [
-      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Legione Zero//Calendario 2027//IT',
-      'BEGIN:VEVENT',
-      `UID:${icsDate(e.start)}-${e.title.replace(/\W+/g, '-').toLowerCase()}@legionezero`,
-      `DTSTAMP:${icsDate(new Date())}T000000Z`,
-      `DTSTART;VALUE=DATE:${icsDate(e.start)}`,
-      `DTEND;VALUE=DATE:${icsDate(endExcl)}`,
-      `SUMMARY:Legione Zero · ${e.title}`,
-      `DESCRIPTION:${desc.replace(/[,;]/g, m => '\\' + m)}`,
-      'END:VEVENT', 'END:VCALENDAR'
-    ].join('\r\n');
-    const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-    const a = Object.assign(document.createElement('a'), { href: url, download: `legione-zero-${icsDate(e.start)}.ics` });
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
-
   // azioni su ogni evento
   real.forEach(e => {
     const actions = document.createElement('div');
@@ -208,10 +184,7 @@
       href: `mailto:${MAIL}?subject=${encodeURIComponent('Info: ' + e.title)}&body=${encodeURIComponent(`Ciao, vorrei informazioni su: ${e.title} (${fmtRange(e)}).`)}`,
       textContent: 'Email'
     });
-    const add = Object.assign(document.createElement('button'), { type: 'button', textContent: '+ Calendario' });
-    add.addEventListener('click', () => downloadIcs(e));
     actions.append(info, mail);
-    if (e.start) actions.append(add);
     $('.ev__body', e.el).appendChild(actions);
   });
 
@@ -298,10 +271,21 @@
   const lbImg = $('img', lb);
   let shots = [];
   let cur = 0;
+  // apertura immediata: mostra subito la miniatura già caricata, poi la sostituisce con l'immagine grande appena pronta
+  const preload = (a) => { if (a) new Image().src = a.getAttribute('href'); };
   const show = (i) => {
     cur = (i + shots.length) % shots.length;
-    lbImg.src = shots[cur].getAttribute('href');
-    lbImg.alt = $('img', shots[cur]).alt;
+    const link = shots[cur], thumb = $('img', link), full = link.getAttribute('href');
+    lbImg.alt = thumb.alt;
+    const big = new Image();
+    big.src = full;
+    if (big.complete) lbImg.src = full;
+    else {
+      lbImg.src = thumb.currentSrc || thumb.src;
+      big.onload = () => { if (shots[cur] === link) lbImg.src = full; };
+    }
+    preload(shots[(cur + 1) % shots.length]);
+    preload(shots[(cur - 1 + shots.length) % shots.length]);
   };
   // ogni gruppo (galleria, locandine) si sfoglia per conto suo; per le locandine solo quelle visibili col filtro attivo
   const openLb = (group, link, poster) => {
@@ -311,6 +295,8 @@
     lb.hidden = false;
     document.body.classList.add('no-scroll');
   };
+  // precarica l'immagine grande appena il dito/mouse tocca la miniatura
+  $$('.g, .ev__poster').forEach(a => ['pointerenter', 'touchstart'].forEach(ev => a.addEventListener(ev, () => preload(a), { once: true, passive: true })));
   $$('.g').forEach(a => a.addEventListener('click', e => { e.preventDefault(); openLb(() => $$('.g'), a, false); }));
   $$('.ev__poster').forEach(a => a.addEventListener('click', e => {
     e.preventDefault();
