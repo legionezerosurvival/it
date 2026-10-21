@@ -153,7 +153,7 @@
   const dated = real.filter(e => e.start);
 
   const fmtRange = (e) => {
-    if (!e.start) return 'data in arrivo';
+    if (!e.start) return 'data da definire';
     const m = MESI_LUNGHI[e.end.getMonth()];
     return e.start.getTime() === e.end.getTime()
       ? `${e.start.getDate()} ${m} ${e.start.getFullYear()}`
