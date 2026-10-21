@@ -83,9 +83,7 @@ body.no-scroll{overflow:hidden}
 .nav.is-scrolled::after{transform:scaleX(1)}
 .nav__inner{height:100%;width:min(1280px,100% - 48px);margin-inline:auto;display:flex;align-items:center;gap:28px}
 .brand{display:flex;align-items:center;gap:12px;color:var(--sand);flex-shrink:0;position:relative;z-index:3}
-.brand__mark svg{width:34px;height:38px;display:block}
-.brand__mark path{fill:var(--ink);stroke:var(--accent);stroke-width:2.5}
-.brand__mark text{font:400 22px var(--font-s);fill:var(--accent)}
+.brand__logo{width:46px;height:46px;display:block;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 .brand__text{font:500 17px/1 var(--font-d);letter-spacing:.26em}
 .brand__text b{font-family:var(--font-s);font-weight:400;color:var(--accent);margin-left:6px;letter-spacing:.12em}
 
@@ -213,6 +211,24 @@ body.no-scroll{overflow:hidden}
 .svc ul{list-style:none;padding:0;margin:0;display:grid;gap:10px}
 .svc li{position:relative;padding-left:18px;font-size:14.5px;line-height:1.6}
 .svc li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:7px;background:var(--accent);transform:rotate(45deg)}
+.svc__place{margin:-6px 0 14px;font:600 12px/1.3 var(--font-d);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.svc--wide{grid-column:1/-1;flex-direction:row}
+.svc--wide{min-height:340px}
+.svc--wide .svc__img{flex:0 0 46%;aspect-ratio:auto}
+.svc--wide .svc__img img{position:absolute;inset:0}
+.svc--wide .svc__img::after{background:linear-gradient(270deg,var(--olive-9),transparent 45%)}
+.svc--wide .svc__body{flex:1;align-self:center;padding:34px 34px 34px 10px}
+.svc--wide .svc__num{top:26px;right:30px}
+.svc--wide h3{padding-right:70px}
+@media (max-width:640px){
+  .svc--wide{flex-direction:column}
+  .svc--wide{min-height:0}
+  .svc--wide .svc__img{flex:none;aspect-ratio:16/9}
+  .svc--wide .svc__img::after{background:linear-gradient(0deg,var(--olive-9),transparent 60%)}
+  .svc--wide .svc__body{padding:4px 26px 28px}
+  .svc--wide .svc__num{top:-34px;right:22px}
+  .svc--wide h3{padding-right:0}
+}
 
 /* ---------- band ---------- */
 .band{position:relative;overflow:hidden;padding:clamp(110px,16vw,190px) 0;text-align:center}
